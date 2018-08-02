@@ -37,7 +37,7 @@ public class CheckTokenFilter implements Filter {
 		HttpServletResponse response=(HttpServletResponse) arg1;
 		String cxt = request.getContextPath();
 		LOGGER.info("----------请求路径{}---------",request.getRequestURI());
-		String[] nonPath  ={"/login", "/sms", "/activity", "/credit/getCreditApiInfo"};
+		String[] nonPath  ={"/login", "/sms", "/credit/getCreditApiInfo"};
 		for (String non : nonPath) {
 			LOGGER.info("-------------不验证路径{}---------------",non);
 			if(request.getRequestURI().contains(non)){
