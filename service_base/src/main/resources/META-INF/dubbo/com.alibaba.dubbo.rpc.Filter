@@ -1,0 +1,4 @@
+logProviderInterceptor=com.zw.service.dubbo.filter.LogProviderInterceptor
+authProviderInterceptor=com.zw.service.dubbo.filter.AuthProviderInterceptor
+authConsumerInterceptor=com.zw.service.dubbo.filter.AuthConsumerInterceptor
+logConsumerInterceptor=com.zw.service.dubbo.filter.LogConsumerInterceptor

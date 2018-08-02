@@ -1,0 +1,2 @@
+authInterceptor=com.zw.dubbo.filter.AuthInterceptor
+logInterceptor=com.zw.dubbo.filter.LogInterceptor

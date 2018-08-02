@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd  
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.2.xsd"
+       default-autowire="byName" default-lazy-init="false">
+    <!-- 读入配置属性文件 -->
+    <context:property-placeholder
+            ignore-unresolvable="true"
+            file-encoding="UTF-8"
+            location="classpath*:/properties/*.properties"/>
+
+    <import resource="classpath*:/boot/dubbo-provider.xml"/>
+
+    <import resource="classpath*:/boot/dubbo-consumer.xml"/>
+
+    <import resource="classpath*:/boot/schedule.xml"/>
+
+
+    <!-- 同盾配置BEAN create by 陈清玉-->
+    <bean id="tongDunSettings" class="com.api.model.tongdun.TongDunSettings">
+        <property name="reportIdUrl" value="${tongdun.reportIdUrl}"/>
+        <property name="reportInfoUrl" value="${tongdun.reportInfoUrl}"/>
+        <property name="partnerCode" value="${tongdun.partnerCode}"/>
+        <property name="partnerKey" value="${tongdun.partnerKey}"/>
+        <property name="appName" value="${tongdun.appName}"/>
+    </bean>
+    <!-- 手机短信配置BEAN create by 陈清玉-->
+    <bean id="msgSettings" class="com.api.model.sortmsg.MsgSettings">
+        <property name="type" value="${sms.type}"/>
+        <property name="channelUniqId" value="${sms.channelUniqId}"/>
+        <property name="requestType" value="${sms.requestType}"/>
+        <property name="requestUrl" value="${sms.url}"/>
+        <property name="timeOut" value="${sms.timeOut}"/>
+    </bean>
+    <!-- 银行卡四要素BEAN create by 陈清玉-->
+    <bean id="bankcardSettings" class="com.api.model.bankcard.BankcardSettings">
+        <property name="requestType" value="${bankcard.requestType}"/>
+        <property name="requestUrl" value="${bankcard.requestUrl}"/>
+        <property name="authConfirmUrl" value="${bankcard.authconfirmUrl}"/>
+        <property name="bankListUrl" value="${bankcard.bankListUrl}"/>
+        <property name="cityListUrl" value="${bankcard.cityListUrl}"/>
+        <property name="provinceListUrl" value="${bankcard.provinceListUrl}"/>
+        <property name="subBankListUrl" value="${bankcard.subBankListUrl}"/>
+        <property name="merchantNumber" value="${bankcard.merchantNumber}"/>
+    </bean>
+    <!-- 碧友信加密BEAN create by 陈清玉-->
+    <bean id="byxSettings" class="com.api.model.BYXSettings">
+        <property name="appKey" value="${byx.appKey}"/>
+        <property name="appSecrect" value="${byx.appSecrect}"/>
+        <property name="desKey" value="${byx.desKey}"/>
+        <property name="vi" value="${byx.iv}"/>
+    </bean>
+
+    <!-- 魔盒BEAN create by 陈清玉-->
+    <bean id="shujumoheSettings" class="com.api.model.shujumohe.ShujumoheSettings">
+        <property name="requestUrl" value="${shujumohe.requestUrl}"/>
+        <property name="requestType" value="${shujumohe.requestType}"/>
+        <property name="boxToken" value="${shujumohe.boxToken}"/>
+        <property name="partnerCode" value="${shujumohe.partnerCode}"/>
+        <property name="partnerKey" value="${shujumohe.partnerKey}"/>
+        <property name="operatorApi" value="${shujumohe.operatorApi}"/>
+    </bean>
+
+    <!-- 征信配置BEAN create by luochaofang-->
+    <bean id="creditSettings" class="com.api.model.credit.CreditSettings">
+       <!-- <property name="callbackUrl" value="${credit.callbackUrl}"/>-->
+        <property name="creditHost" value="${credit.creditHost}"/>
+        <property name="creditTokenUrl" value="${credit.creditTokenUrl}"/>
+        <property name="requestType" value="${credit.requestType}"/>
+        <property name="ak" value="${credit.ak}"/>
+        <property name="sk" value="${credit.sk}"/>
+        <property name="appKey" value="${credit.appKey}"/>
+        <property name="taskType" value="${credit.taskType}"/>
+    </bean>
+
+</beans>

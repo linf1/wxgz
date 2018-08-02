@@ -1,0 +1,24 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+version '1.0'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Quickstart',
+                'Implementation-Version': version
+    }
+}
+
+dependencies {
+    compile project(":commons_tools")
+    compile 'log4j:log4j:1.2.9'
+    compile 'com.zw:baofoo-common-rsa-4.1.0:4.1.0'
+    compile 'com.zw:xstream-1.4.5:1.4.5'
+    compile 'com.zw:jettison-1.3.3:1.3.3'
+    compile 'com.itextpdf:itextpdf:5.5.10'
+    compile 'com.itextpdf:itext-asian:5.2.0'
+    compile 'com.zw:jdom:1.1'
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+}

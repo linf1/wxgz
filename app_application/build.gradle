@@ -1,0 +1,58 @@
+apply plugin: 'war'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'maven'
+
+version = '1.0'
+
+dependencies {
+    compile project(":commons_tools")
+
+    compile project(":manage_facade")
+
+    compile 'log4j:log4j:1.2.17'
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'commons-lang:commons-lang:2.4'
+    compile 'commons-io:commons-io:2.4'
+    compile 'commons-logging:commons-logging:1.2'
+    compile 'org.apache.tomcat:servlet-api:6.0.45'
+    compile 'org.apache.tomcat:jsp-api:6.0.45'
+    compile 'commons-codec:commons-codec:1.9'
+    compile 'commons-beanutils:commons-beanutils:1.8.0'
+    compile 'org.springframework:spring-core:4.3.2.RELEASE'
+    compile 'org.springframework:spring-tx:4.3.2.RELEASE'
+    compile 'org.springframework:spring-web:4.3.2.RELEASE'
+    compile 'org.springframework:spring-webmvc:4.3.2.RELEASE'
+    compile 'org.springframework:spring-beans:4.3.2.RELEASE'
+    compile 'org.springframework:spring-webmvc-portlet:4.3.2.RELEASE'
+    compile 'org.springframework:spring-context-support:4.3.2.RELEASE'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.8.4'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.4'
+    compile 'org.patchca:patchca:2.0'
+    compile("org.springframework.session:spring-session-data-redis:1.2.2.RELEASE")
+    compile 'commons-fileupload:commons-fileupload:1.3.2'
+    compile("com.alibaba:dubbo:2.5.3") {
+        exclude group: 'org.springframework'
+    }
+    compile 'com.google.guava:guava:18.0'
+    compile "com.alibaba:fastjson:${fastJson_Version}"
+    compile 'org.apache.zookeeper:zookeeper:3.4.8'
+    compile 'org.springframework:spring-context:4.3.2.RELEASE'
+    compile 'org.aspectj:aspectjweaver:1.7.3'
+    compile 'cglib:cglib:3.2.4'
+    compile 'jstl:jstl:1.2'
+    compile 'javassist:javassist:3.12.1.GA'
+    compile 'com.101tec:zkclient:0.3'
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    compile "com.aliyun:aliyun-java-sdk-sts:2.1.6"
+    compile "com.aliyun:aliyun-java-sdk-core:2.1.7"
+    compile "aliyunoss:aliyun-sdk-oss-2.7.0:2.7"
+    compile group: 'jdom', name: 'jdom', version: '1.1'
+    compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.2'
+    compile group: 'com.google.zxing', name: 'javase', version: '3.3.0'
+    compile group: 'com.google.zxing', name: 'core', version: '3.3.0'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+    compile 'com.itextpdf:itextpdf:5.5.10'
+    compile 'com.itextpdf:itext-asian:5.2.0'
+    compile 'com.github.axet:kaptcha:0.0.9'
+    compile 'org.apache.pdfbox:pdfbox:2.0.4'
+}
