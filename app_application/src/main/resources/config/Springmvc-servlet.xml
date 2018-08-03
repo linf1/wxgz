@@ -134,8 +134,8 @@
     <!--p:defaultEncoding="UTF-8"/>-->
 
     <!-- 对js引用的设置 -->
-    <mvc:resources location="/resources/" mapping="/resources/**" cache-period="31556926"/>
+   <!-- <mvc:resources location="/resources/" mapping="/resources/**" cache-period="31556926"/>
     <mvc:default-servlet-handler/>
 
-    <mvc:view-controller path="/" view-name="merch-wechat/login"/>
+    <mvc:view-controller path="/" view-name="merch-wechat/login"/>-->
 </beans>

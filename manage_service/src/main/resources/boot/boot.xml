@@ -82,4 +82,11 @@
         <property name="taskType" value="${credit.taskType}"/>
     </bean>
 
+    <!-- 微信加密配置 -->
+    <bean id="WechatSettings" class="com.api.model.common.WechatSettings">
+        <property name="appId" value="${wxgz.appId}"/>
+        <property name="encodingaeskey" value="${wxgz.encodingaeskey}"/>
+        <property name="token" value="${wxgz.token}"/>
+    </bean>
+
 </beans>

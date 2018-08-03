@@ -1,7 +1,10 @@
 package com.zw.miaofuspd.filter;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.Filter;
@@ -13,13 +16,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.base.util.AppRouterSettings;
-import com.base.util.StringUtils;
-import net.minidev.json.JSONObject;
+import com.wechat.util.SignUtil;
 
-import com.jwt.Jwt;
-import com.jwt.TokenState;
-import org.apache.zookeeper.Login;
+import com.zw.web.base.AbsBaseController;
+import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,66 +32,48 @@ import org.slf4j.LoggerFactory;
  * @author 陈清玉 form https://github.com/bigmeow/JWT
  *
  */
-public class CheckTokenFilter implements Filter {
+public class CheckTokenFilter extends AbsBaseController implements Filter {
 	private  final Logger LOGGER = LoggerFactory.getLogger(CheckTokenFilter.class);
 	@Override
 	public void doFilter(ServletRequest argo, ServletResponse arg1,
-			FilterChain chain ) throws IOException, ServletException {
+			FilterChain chain ) throws IOException {
 		HttpServletRequest request=(HttpServletRequest) argo;
 		HttpServletResponse response=(HttpServletResponse) arg1;
-		String cxt = request.getContextPath();
 		LOGGER.info("----------请求路径{}---------",request.getRequestURI());
-		String[] nonPath  ={"/login", "/sms", "/credit/getCreditApiInfo"};
-		for (String non : nonPath) {
-			LOGGER.info("-------------不验证路径{}---------------",non);
-			if(request.getRequestURI().contains(non)){
-				//登陆接口不校验token，直接放行
-				chain.doFilter(request, response);
-				return;
-			}
-		}
-		//其他API接口一律校验token
-		LOGGER.info("开始校验token");
-		//从请求头中获取token
-		String token = request.getHeader("token");
-		if(StringUtils.isEmpty(token)){
-			token = request.getParameter("token");
-		}
-		Map<String, Object> resultMap=Jwt.validToken(token);
-		TokenState state=TokenState.getTokenState((String)resultMap.get("state"));
-		switch (state) {
-		case VALID:
-			//取出payload中数据,放入到request作用域中
-			request.setAttribute("data", resultMap.get("data"));
-			//放行
-			chain.doFilter(request, response);
-			break;
-		case EXPIRED:
-		case INVALID:
-			LOGGER.info("无效token");
-			//token过期或者无效，则输出错误信息返回给ajax
-			JSONObject outputMSg=new JSONObject();
-			outputMSg.put("retCode", "no_token");
-			outputMSg.put("retMsg", "您的token不合法或者过期了，请重新登陆");
-			output(outputMSg.toJSONString(), response);
-			break;
-		default:
 
+		LOGGER.info("开始校验签名");
+		String signature = request.getParameter("signature");// 微信加密签名
+		String timestamp = request.getParameter("timestamp");// 时间戳
+		String nonce = request.getParameter("nonce");// 随机数
+		String echostr = request.getParameter("echostr");//随机字符串
+
+		LOGGER.info("微信返回参数：{}",signature +","+ timestamp +","+ nonce +","+ echostr);
+		if(StringUtils.isBlank(signature) || StringUtils.isBlank(timestamp)
+				|| StringUtils.isBlank(nonce)) {
+			LOGGER.error("Failed to verify the signature-----null!");
+		} else {
+			 boolean isPass = SignUtil.checkSignature("eyJ0eXAiOiJKV1QiLCJhbGiiIzI1NiJ9", signature, timestamp, nonce);
+			 if(isPass) {
+				 LOGGER.info("Connect the weixin server is successful.");
+
+				 //xml解析-------> map
+				 Map<String, String> requestMap = xmlToMap(request);
+				 // 发送方帐号（open_id）
+				 String fromUserName = requestMap.get("FromUserName");
+				 // 公众帐号
+				 String toUserName = requestMap.get("ToUserName");
+				 // 消息类型
+				 String msgType = requestMap.get("MsgType");
+				 // 消息内容
+				 String content = requestMap.get("Content");
+
+				 LOGGER.info("FromUserName is:" + fromUserName + ", ToUserName is:" + toUserName + ", MsgType is:" + msgType);
+			 } else {
+				 LOGGER.error("Failed to verify the signature!");
+			 }
 		}
-		
-		
 	}
 	
-	
-	public void output(String jsonStr,HttpServletResponse response) throws IOException{
-		response.setContentType("text/html;charset=UTF-8;");
-		PrintWriter out = response.getWriter();
-//		out.println();
-		out.write(jsonStr);
-		out.flush();
-		out.close();
-		
-	}
 	
 	@Override
 	public void init(FilterConfig arg0) throws ServletException {

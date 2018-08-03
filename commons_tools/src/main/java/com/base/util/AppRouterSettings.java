@@ -2,7 +2,7 @@ package com.base.util;
 
 /**
  * app路由管理
- * @author 陈清玉
+ * @author luochaofang
  */
 public interface AppRouterSettings {
 
@@ -16,6 +16,14 @@ public interface AppRouterSettings {
 
     String LINKMAN_MODUAL = "/linkMan";
 
+
+    //////////////////////// ----------------  微信请求 mapping url  --------------
+
+    String WECHAT_TEXT_MESSAGE = "/toSendTextMessage";
+
+    String WECHAT_IMAGE_MESSAGE = "/toSendImageEMessage";
+
+    String WECHAT_VOICE_MESSAGE = "/toSendVoiceMessage";
 
 
 }

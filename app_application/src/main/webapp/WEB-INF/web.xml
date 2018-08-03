@@ -92,7 +92,7 @@
     </filter>
     <filter-mapping>
         <filter-name>Filter1_CheckToken</filter-name>
-        <url-pattern>/1.0.0/*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
 
 </web-app>
