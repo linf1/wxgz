@@ -18,6 +18,8 @@ public interface AppRouterSettings {
 
 
     //////////////////////// ----------------  微信请求 mapping url  --------------
+    String MESSAGE_WECHAT = "/message";
+
 
     String WECHAT_TEXT_MESSAGE = "/toSendTextMessage";
 

@@ -3,6 +3,7 @@ package com.zw.miaofuspd.filter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +17,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.wechat.util.SignUtil;
-
-import com.zw.web.base.AbsBaseController;
+import com.api.service.wechat.IAuthApiService;
+import com.api.model.wechat.AuthResult;
+import com.constants.ApiConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -26,17 +27,22 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 /**
  * token校验过滤器，所有的API接口请求都要经过该过滤器(除了登陆接口)
  * @author 陈清玉 form https://github.com/bigmeow/JWT
  *
  */
-public class CheckTokenFilter extends AbsBaseController implements Filter {
+public class CheckTokenFilter implements Filter {
 	private  final Logger LOGGER = LoggerFactory.getLogger(CheckTokenFilter.class);
+	@Autowired
+	private IAuthApiService authApiService;
+
 	@Override
 	public void doFilter(ServletRequest argo, ServletResponse arg1,
-			FilterChain chain ) throws IOException {
+			FilterChain chain ) throws IOException, ServletException {
 		HttpServletRequest request=(HttpServletRequest) argo;
 		HttpServletResponse response=(HttpServletResponse) arg1;
 		LOGGER.info("----------请求路径{}---------",request.getRequestURI());
@@ -52,25 +58,38 @@ public class CheckTokenFilter extends AbsBaseController implements Filter {
 				|| StringUtils.isBlank(nonce)) {
 			LOGGER.error("Failed to verify the signature-----null!");
 		} else {
-			 boolean isPass = SignUtil.checkSignature("eyJ0eXAiOiJKV1QiLCJhbGiiIzI1NiJ9", signature, timestamp, nonce);
-			 if(isPass) {
-				 LOGGER.info("Connect the weixin server is successful.");
-
-				 //xml解析-------> map
-				 Map<String, String> requestMap = xmlToMap(request);
-				 // 发送方帐号（open_id）
-				 String fromUserName = requestMap.get("FromUserName");
-				 // 公众帐号
-				 String toUserName = requestMap.get("ToUserName");
-				 // 消息类型
-				 String msgType = requestMap.get("MsgType");
-				 // 消息内容
-				 String content = requestMap.get("Content");
-
-				 LOGGER.info("FromUserName is:" + fromUserName + ", ToUserName is:" + toUserName + ", MsgType is:" + msgType);
-			 } else {
-				 LOGGER.error("Failed to verify the signature!");
-			 }
+            if(StringUtils.isNotBlank(echostr)){
+				Map<String, String> postDataMap = new HashMap<>(1);
+				postDataMap.put("Encrypt", echostr);
+				LOGGER.info("开始验证微信接入验签:{}" + echostr);
+				AuthResult result = authApiService.validSignature(signature,timestamp, nonce, postDataMap);
+				if(ApiConstants.STATUS_SIGNATURE_SUCCESS.equals(result.getCode())) {
+					LOGGER.info("验签成功，开始接入微信。。。。。。。。。。。。。");
+					outWrite(echostr, response);
+				} else {
+					LOGGER.info("微信接入，验签失败：{}"+ result.getMsg());
+				}
+			} else {
+				LOGGER.info("开始提取request中xml数据包:{}" + request);
+				Map<String, String> requestMap = xmlToMap(request);
+				if(!CollectionUtils.isEmpty(requestMap)) {
+					if(requestMap.containsKey("MsgType") && requestMap.containsKey("Encrypt")) {
+						LOGGER.info("数据提取成功,开始验证签名。。。。。。。。。。。");
+						AuthResult result = authApiService.validSignature(signature,timestamp, nonce, requestMap);
+						if(ApiConstants.STATUS_SIGNATURE_SUCCESS.equals(result.getCode())) {
+							LOGGER.info("验签成功，开始执行下一步。。。。。。。。。。。。。");
+							//跳转到指定的controller
+							request.getRequestDispatcher(result.getMsg()).forward(request, response);
+						} else {
+							LOGGER.info("微信消息，验签失败：{}"+ result.getMsg());
+						}
+					} else if(requestMap.containsKey("msg")) {
+						LOGGER.info("数据提取失败:{}"+ requestMap.get("msg"));
+					} else {
+						LOGGER.info("数据提取失败未知异常，请联系管理员。");
+					}
+				}
+			}
 		}
 	}
 	
@@ -83,6 +102,50 @@ public class CheckTokenFilter extends AbsBaseController implements Filter {
 	@Override
 	public void destroy() {
 		
+	}
+
+	/**
+	 * xml转换为map
+	 * @param request
+	 * @return map 错误信息或者提取的map
+	 */
+	@SuppressWarnings("unchecked")
+	private static Map<String, String> xmlToMap(HttpServletRequest request){
+		Map<String, String> map = new HashMap<>();
+		SAXReader reader = new SAXReader();
+		try {
+			InputStream ins = request.getInputStream();
+			try {
+				Document doc = reader.read(ins);
+				Element root = doc.getRootElement();
+				List<Element> list = root.elements();
+				for (Element e : list) {
+					map.put(e.getName(), e.getText());
+				}
+			} catch (DocumentException e1) {
+				map.put("msg", Arrays.toString(e1.getStackTrace()));
+			}finally{
+				assert ins != null;
+				try {
+					ins.close();
+				} catch (IOException e) {
+					map.put("msg", Arrays.toString(e.getStackTrace()));
+				}
+			}
+		} catch (IOException e1) {
+			map.put("msg", Arrays.toString(e1.getStackTrace()));
+			return map;
+		}
+		return map;
+	}
+
+	public void outWrite(String jsonStr,HttpServletResponse response) throws IOException{
+		response.setContentType("text/html;charset=UTF-8;");
+		PrintWriter out = response.getWriter();
+		out.write(jsonStr);
+		out.flush();
+		out.close();
+
 	}
 
 }

@@ -31,4 +31,8 @@
                      id="apiResultServerImpl" check="false"/>
     <dubbo:reference interface="com.api.service.tongdun.ITongDunApiService" check="false"
                    id="tongDunApiServiceImpl"/>
+    <dubbo:reference interface="com.api.service.wechat.IMessageApiService" check="false"
+                   id="messageApiServiceImpl"/>
+    <dubbo:reference interface="com.api.service.wechat.IAuthApiService" check="false"
+                   id="authApiServiceImpl"/>
 </beans>

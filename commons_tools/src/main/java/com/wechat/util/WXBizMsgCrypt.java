@@ -149,7 +149,7 @@ public class WXBizMsgCrypt {
 	 * @return 解密得到的明文
 	 * @throws AesException aes解密失败
 	 */
-	String decrypt(String text) throws AesException {
+	 String decrypt(String text) throws AesException {
 		byte[] original;
 		try {
 			// 设置解密模式为AES的CBC模式
@@ -192,6 +192,22 @@ public class WXBizMsgCrypt {
 		}
 		return xmlContent;
 
+	}
+
+	/**将16进制转换为二进制
+	 * @param hexStr
+	 * @return
+	 */
+	public static byte[] parseHexStr2Byte(String hexStr) {
+		if (hexStr.length() < 1)
+			return null;
+		byte[] result = new byte[hexStr.length()/2];
+		for (int i = 0;i< hexStr.length()/2; i++) {
+			int high = Integer.parseInt(hexStr.substring(i*2, i*2+1), 16);
+			int low = Integer.parseInt(hexStr.substring(i*2+1, i*2+2), 16);
+			result[i] = (byte) (high * 16 + low);
+		}
+		return result;
 	}
 
 	/**
@@ -251,6 +267,7 @@ public class WXBizMsgCrypt {
 
 		// 验证安全签名
 		String signature = SHA1.getSHA1(token, timeStamp, nonce, encrypt[1].toString());
+		//String signature = SHA1.getSHA1(token, timeStamp, nonce, postData);
 
 		// 和URL中的签名比较是否相等
 		// System.out.println("第三方收到URL中的签名：" + msg_sign);
@@ -260,7 +277,8 @@ public class WXBizMsgCrypt {
 		}
 
 		// 解密
-		String result = decrypt(encrypt[1].toString());
+		//String result = decrypt(encrypt[1].toString());
+		String result = decrypt(postData);
 		return result;
 	}
 

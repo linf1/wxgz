@@ -1,7 +1,5 @@
 package com.wechat.model;
 
-import com.api.model.common.WechatUserBase;
-
 import java.io.Serializable;
 
 /**

@@ -5,11 +5,22 @@ import java.util.Map;
 
 /**
  * API常量
- * @author  陈清玉
+ * @author  luochaofang
  */
 public class ApiConstants {
 
     public static Map<String, String> statusMap = new HashMap<String, String>();
+
+    ////////////////////////// 微信接口服务  ////////////////
+    public static final String STATUS_SIGNATURE_ERROR = "1";
+
+    public static final String STATUS_SIGNATURE_SUCCESS = "0";
+
+
+
+
+
+
 
     public static final String STATUS_INPUT_PHONE_ERROR_MSG = "手机号不合法";
     public static final String STATUS_INPUT_ID_ERROR_MSG = "身份证号不合法";

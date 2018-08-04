@@ -61,44 +61,6 @@ public class AbsBaseController {
         return resultVO;
     }
 
-    /**
-     * xml转换为map
-     * @param request
-     * @return
-     * @throws IOException
-     */
-    @SuppressWarnings("unchecked")
-    public static Map<String, String> xmlToMap(HttpServletRequest request) throws IOException{
-        Map<String, String> map = new HashMap<>();
-        SAXReader reader = new SAXReader();
-
-        InputStream ins = null;
-        try {
-            ins = request.getInputStream();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        try {
-            Document  doc = reader.read(ins);
-            Element root = doc.getRootElement();
-
-            List<Element> list = root.elements();
-
-            for (Element e : list) {
-                map.put(e.getName(), e.getText());
-            }
-
-            return map;
-        } catch (DocumentException e1) {
-            e1.printStackTrace();
-        }finally{
-            assert ins != null;
-            ins.close();
-        }
-
-        return null;
-    }
-
     public void outWrite(String jsonStr,HttpServletResponse response) throws IOException{
         response.setContentType("text/html;charset=UTF-8;");
         PrintWriter out = response.getWriter();

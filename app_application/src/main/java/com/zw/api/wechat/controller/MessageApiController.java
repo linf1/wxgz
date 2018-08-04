@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,7 +20,7 @@ import java.util.Map;
  * @author luochaofang
  */
 @Controller
-@RequestMapping(value = AppRouterSettings.VERSION  + "/message")
+@RequestMapping(value = AppRouterSettings.API_MODULE  + AppRouterSettings.MESSAGE_WECHAT)
 public class MessageApiController extends AbsBaseController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageApiController.class);
@@ -34,7 +35,8 @@ public class MessageApiController extends AbsBaseController {
     @PostMapping(AppRouterSettings.WECHAT_TEXT_MESSAGE)
     public void toSendTextMessage(HttpServletRequest request, HttpServletResponse response) {
         try {
-            Map<String, String> requestMap = xmlToMap(request);
+            //Map<String, String> requestMap = xmlToMap(request);
+            Map<String, String> requestMap = new HashMap<>();
             String xmlString = messageApiService.getToTextMessage(requestMap);
             LOGGER.info("发送文本消息:{}", xmlString);
             outWrite(xmlString, response);
