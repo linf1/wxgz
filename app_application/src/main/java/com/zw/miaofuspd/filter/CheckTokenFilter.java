@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -27,7 +28,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -35,9 +36,10 @@ import org.springframework.util.CollectionUtils;
  * @author 陈清玉 form https://github.com/bigmeow/JWT
  *
  */
+@Component
 public class CheckTokenFilter implements Filter {
 	private  final Logger LOGGER = LoggerFactory.getLogger(CheckTokenFilter.class);
-	@Autowired
+	@Resource
 	private IAuthApiService authApiService;
 
 	@Override
@@ -48,21 +50,20 @@ public class CheckTokenFilter implements Filter {
 		LOGGER.info("----------请求路径{}---------",request.getRequestURI());
 
 		LOGGER.info("开始校验签名");
-		String signature = request.getParameter("signature");// 微信加密签名
-		String timestamp = request.getParameter("timestamp");// 时间戳
-		String nonce = request.getParameter("nonce");// 随机数
-		String echostr = request.getParameter("echostr");//随机字符串
+		String signature = request.getParameter("signature");// 微信加密签名(非必须)
+        String msgSignature = request.getParameter("msg_signature");// 微信加密签名
+        String timestamp = request.getParameter("timestamp");// 时间戳
+        String nonce = request.getParameter("nonce");// 随机数
+        String echostr = request.getParameter("echostr");//随机字符串
 
-		LOGGER.info("微信返回参数：{}",signature +","+ timestamp +","+ nonce +","+ echostr);
-		if(StringUtils.isBlank(signature) || StringUtils.isBlank(timestamp)
+        LOGGER.info("微信返回参数：{}",signature +","+msgSignature+","+ timestamp +","+ nonce +","+ echostr);
+        if((StringUtils.isBlank(msgSignature) && StringUtils.isBlank(signature)) || StringUtils.isBlank(timestamp)
 				|| StringUtils.isBlank(nonce)) {
-			LOGGER.error("Failed to verify the signature-----null!");
-		} else {
+            LOGGER.error("Failed to verify the signature-----null!");
+        } else {
             if(StringUtils.isNotBlank(echostr)){
-				Map<String, String> postDataMap = new HashMap<>(1);
-				postDataMap.put("Encrypt", echostr);
 				LOGGER.info("开始验证微信接入验签:{}" + echostr);
-				AuthResult result = authApiService.validSignature(signature,timestamp, nonce, postDataMap);
+				AuthResult result = authApiService.validConnectWechat(signature,timestamp, nonce, echostr);
 				if(ApiConstants.STATUS_SIGNATURE_SUCCESS.equals(result.getCode())) {
 					LOGGER.info("验签成功，开始接入微信。。。。。。。。。。。。。");
 					outWrite(echostr, response);
@@ -70,15 +71,16 @@ public class CheckTokenFilter implements Filter {
 					LOGGER.info("微信接入，验签失败：{}"+ result.getMsg());
 				}
 			} else {
-				LOGGER.info("开始提取request中xml数据包:{}" + request);
+				LOGGER.info("开始提取request中xml数据包:{..................}");
 				Map<String, String> requestMap = xmlToMap(request);
 				if(!CollectionUtils.isEmpty(requestMap)) {
-					if(requestMap.containsKey("MsgType") && requestMap.containsKey("Encrypt")) {
+					if(requestMap.containsKey("Encrypt")) {
 						LOGGER.info("数据提取成功,开始验证签名。。。。。。。。。。。");
-						AuthResult result = authApiService.validSignature(signature,timestamp, nonce, requestMap);
+						AuthResult result = authApiService.validSignature(msgSignature,timestamp, nonce, requestMap);
 						if(ApiConstants.STATUS_SIGNATURE_SUCCESS.equals(result.getCode())) {
 							LOGGER.info("验签成功，开始执行下一步。。。。。。。。。。。。。");
 							//跳转到指定的controller
+							request.setAttribute("encrypt", requestMap.get("Encrypt"));
 							request.getRequestDispatcher(result.getMsg()).forward(request, response);
 						} else {
 							LOGGER.info("微信消息，验签失败：{}"+ result.getMsg());
@@ -95,7 +97,7 @@ public class CheckTokenFilter implements Filter {
 	
 	
 	@Override
-	public void init(FilterConfig arg0) throws ServletException {
+	public void init(FilterConfig arg0) {
 		System.out.println("token过滤器初始化了");
 	}
 

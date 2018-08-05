@@ -12,6 +12,19 @@
         </param-value>
     </context-param>
 
+    <context-param>
+        <param-name>spring.profiles.active</param-name>
+        <param-value>dev</param-value>
+    </context-param>
+    <context-param>
+        <param-name>spring.profiles.default</param-name>
+        <param-value>dev</param-value>
+    </context-param>
+    <context-param>
+        <param-name>spring.liveBeansView.mbeanDomain</param-name>
+        <param-value>dev</param-value>
+    </context-param>
+
     <!--<listener>-->
         <!--<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>-->
     <!--</listener>-->
@@ -86,12 +99,17 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- 此处使用DelegatingFilterProxy 目的是为了filter中能够注入bean -->
     <filter>
-        <filter-name>Filter1_CheckToken</filter-name>
-        <filter-class>com.zw.miaofuspd.filter.CheckTokenFilter</filter-class>
+        <filter-name>checkTokenFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <init-param>
+            <param-name>targetFilterLifecycle</param-name>
+            <param-value>true</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
-        <filter-name>Filter1_CheckToken</filter-name>
+        <filter-name>checkTokenFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 

@@ -8,7 +8,9 @@ import com.api.model.wechat.AuthResult;
 import com.wechat.util.AesException;
 import com.wechat.util.MessageUtil;
 import com.wechat.util.WXBizMsgCrypt;
+import com.wechat.util.XMLParse;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.common.usermodel.LineStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,8 @@ import org.xml.sax.InputSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -37,27 +41,39 @@ public class AuthApiServiceImpl implements IAuthApiService {
 
 
     @Override
+    public AuthResult validConnectWechat(String msgSignature, String timeStamp, String nonce, String echoStr) {
+        try {
+            LOGGER.info("token:{}"+ wechatSettings.getToken());
+            LOGGER.info("开始验证签名和解密{}"+ echoStr);
+            WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(wechatSettings.getToken(), wechatSettings.getEncodingaeskey(), wechatSettings.getAppId());
+            String result = wxBizMsgCrypt.verifyUrl(msgSignature, timeStamp, nonce, echoStr);
+            LOGGER.info("解密之后的：{}"+ result);
+            if(StringUtils.isNotBlank(result)) {
+                //微信返回的echoStr
+                LOGGER.info("echoStr："+ result);
+                return AuthResult.ok(ApiConstants.STATUS_SIGNATURE_SUCCESS, result);
+            }
+            return AuthResult.error(ApiConstants.STATUS_SIGNATURE_SUCCESS, null);
+        } catch (AesException e) {
+            return AuthResult.error(ApiConstants.STATUS_SIGNATURE_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
     public AuthResult validSignature(String signature, String timestamp, String nonce, Map<String, String> postDataMap) {
         try {
             LOGGER.info("token:{}"+ wechatSettings.getToken());
-           /* // 发送方帐号（open_id）
-            String fromUserName = postDataMap.get("FromUserName");
-            // 公众帐号
-            String toUserName = postDataMap.get("ToUserName");
-
-            // 消息内容
-            String content = postDataMap.get("Content");*/
             WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(wechatSettings.getToken(), wechatSettings.getEncodingaeskey(), wechatSettings.getAppId());
             String result = wxBizMsgCrypt.decryptMsg(signature, timestamp, nonce, postDataMap.get("Encrypt"));
+            LOGGER.info("解密之后的：{}"+ result);
             String url = "";
             if(StringUtils.isNotBlank(result)) {
                 //验签通过，判断是否是含有消息类型
-                if(postDataMap.containsKey("MsgType")) {
-                    // 消息类型
-                    LOGGER.info("解密之前："+ postDataMap.get("MsgType"));
-                    String result1 = wxBizMsgCrypt.decryptMsg(signature, timestamp, nonce, postDataMap.get("MsgType"));
-                    LOGGER.info("解密之后："+ result1);
-                    String msgType = result1;
+                List<String> tagNameList = new ArrayList<>();
+                tagNameList.add("MsgType");
+                Map<String, String>  tagContentMap = XMLParse.extract(result, tagNameList);
+                if(tagContentMap.containsKey("MsgType")) {
+                    String msgType = tagContentMap.get("MsgType");
                     //返回url
                     switch (msgType) {
                         case MessageUtil
@@ -86,6 +102,12 @@ public class AuthApiServiceImpl implements IAuthApiService {
     }
 
     public static void main(String[] args) throws Exception {
+
+
+       /* WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt("eyJ0eXAiOiJKV1QiLCJhbGiiIzI1NiJ9", "27jYKeXSaMDahqISpipaCne30SM3jJiMDl4w1niRBPw", "wx35540f0aead3c309");
+        String result = wxBizMsgCrypt.decryptMsg("b4bc443758b184eca9133cb0882fc0c035bbe084",
+                "1533444363", "540688341", "bOSEV9OMGvhDkaLfutb8Kg43rqQCjTx9BXjqUz+HFC/xYnHXkyoalzEi4YWcNYYYIV7IvXw6UkwMufcVD5IeEnHij7dzIpLDRptJhwT8pFVi6A3Kqlo29lV/aJJWYraMjIuOWkq7m5SQ1b+kGNNdDr1YfLyISMCmzXKwAoDSK6QHTpFlOQFpJcvCuQ8Dhve7OIZ4jMvVZL7T3IWUkQ9Cdp0UsX1g9DzDQ+Oxqqn/tGP2zuzOl+bTrI+y5Hgu5AH+NTmjXMnq/EiaJnPCsdF4W7cyHaDtjQJcnjQuMKInvO2cv87tFtYeyHrD74icFAn2KTOiFDISNKiSr+UoDB68KDagWe5VasRxBSYu4vZdgpgdXVv5c/FJpA1jDDN7WTzlqhQzmsk+DUhuwlNF8n2goLFcWD6D2Dh0lfkJp7T4WHM=");
+        LOGGER.info("解密之后的：{}"+ result);*/
 
         //
         // 第三方回复公众平台

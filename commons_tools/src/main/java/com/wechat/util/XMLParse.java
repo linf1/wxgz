@@ -9,6 +9,9 @@
 package com.wechat.util;
 
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,7 +26,7 @@ import org.xml.sax.InputSource;
  *
  * 提供提取消息格式中的密文及生成回复消息格式的接口.
  */
-class XMLParse {
+public class XMLParse {
 
 	/**
 	 * 提取出xml数据包中的加密消息
@@ -31,21 +34,18 @@ class XMLParse {
 	 * @return 提取出的加密消息字符串
 	 * @throws AesException 
 	 */
-	public static Object[] extract(String xmltext) throws AesException     {
-		Object[] result = new Object[3];
+	public static Map<String, String> extract(String xmltext, List<String> tagNameList) throws AesException     {
+		Map<String, String>  result = new HashMap<>();
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			StringReader sr = new StringReader(xmltext);
 			InputSource is = new InputSource(sr);
 			Document document = db.parse(is);
-
 			Element root = document.getDocumentElement();
-			NodeList nodelist1 = root.getElementsByTagName("Encrypt");
-			NodeList nodelist2 = root.getElementsByTagName("ToUserName");
-			result[0] = 0;
-			result[1] = nodelist1.item(0).getTextContent();
-			result[2] = nodelist2.item(0).getTextContent();
+			for(String key : tagNameList) {
+				result.put(key, root.getElementsByTagName(key).item(0).getTextContent());
+			}
 			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
